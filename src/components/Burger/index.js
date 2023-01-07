@@ -3,7 +3,7 @@ import  BurgerIngredient  from "../Burgeringredient";
 import styles from "../Burger/style.module.css"
 const Burger = () => {
     return (
-        <div className={styles.burger}>
+        <div className={styles.Burger}>
         <BurgerIngredient type="bread-top"/>
         <BurgerIngredient type="cheese" />
         <BurgerIngredient type = "salad"/>
