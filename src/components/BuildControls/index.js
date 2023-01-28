@@ -1,14 +1,31 @@
 import React from "react";
-import styles from './_.module.css'
+import styles from "./_.module.css";
 import BuildControl from "../BuildControl";
 const BuildControls = (props) => {
-return(
+  return (
     <div className={styles.BuildControls}>
-       <BuildControl ortsNemeh={props.ortsNemeh} type = "salad" orts="Салад" />
-       <BuildControl ortsNemeh={props.ortsNemeh} type="bacon" orts = "Гахайн мах" />
-       <BuildControl ortsNemeh={props.ortsNemeh} type = "cheese" orts = "Бяслаг" />
-       <BuildControl ortsNemeh={props.ortsNemeh} type = "meat" orts = "Үхрийн мах" />
+      <p>
+        Бургерийн үнэ: <strong>{props.price}</strong>
+      </p>
+      {Object.keys(props.ingreientnames).map((el) => (
+        <BuildControl
+          key={el}
+          ortsNemeh={props.ortsNemeh}
+          ortsHasah={props.ortsHasah}
+          disabled={props.disabledIngredients}
+          type={el}
+          orts={props.ingreientnames[el]}
+        />
+      ))}
+
+      <button
+        onClick={props.show}
+        disabled={props.disabledButton}
+        className={styles.Orderbutton}
+      >
+        Захиалга хийх
+      </button>
     </div>
-);
-}
+  );
+};
 export default BuildControls;

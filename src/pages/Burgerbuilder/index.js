@@ -1,29 +1,122 @@
-import React, { Component }  from "react";
+import React, { Component } from "react";
 import Burger from "../../components/Burger";
 import BuildControls from "../../components/BuildControls";
-class BurgerBuilder extends Component{
-    state = {
-        ingredient: {
-            salad: 0,
-            cheese: 0,
-            bacon: 0,
-            meat: 0,
-        }
+import Modal from "../../components/general/modal";
+import OrderSummary from "../../components/OrderSummary";
+import axios from "../../utility/axios-order";
+const ingredient_prices = { salad: 150, bacon: 800, cheese: 250, meat: 1500 };
+const ingredient_names = {
+  bacon: "Гахайн мах",
+  cheese: "Бяслаг",
+  salad: "Салад",
+  meat: "Үхрийн мах",
+};
+class BurgerBuilder extends Component {
+  state = {
+    ingredients: {
+      salad: 0,
+      cheese: 0,
+      bacon: 0,
+      meat: 0,
+    },
+    totalPrice: 500,
+    purchasing: false,
+    confirmOrder: false,
+    lastcustomername: "N/A",
+  };
+
+  componentDidMount = () => {
+    axios.get("/orders.json").then((response) => {
+      const arr = Object.entries(response.data);
+      arr.forEach((el) => {
+        console.log(el[1].address.name + "===> " + el[1].dun);
+      });
+
+      const lastorder = arr[arr.length - 1][1];
+
+      this.setState({
+        ingredients: lastorder.orts,
+        totalPrice: lastorder.dun,
+        lastcustomername: lastorder.address.name,
+      });
+    });
+  };
+  continueOrder = () => {
+    const order = {
+      orts: this.state.ingredients,
+      dun: this.state.totalPrice,
+      address: {
+        name: "Tengis",
+        city: "ub",
+        street: "baynburd hulgaich tengis",
+      },
+    };
+
+    axios.post("/orders.json", order).then((respone) => {
+      alert("Amjilttai hadgallaa");
+    });
+  };
+  showConfirmModal = () => {
+    this.setState({ confirmOrder: true });
+  };
+
+  closeConfirmModal = () => {
+    this.setState({ confirmOrder: false });
+  };
+
+  ortsNemeh = (type) => {
+    console.log("===>" + type);
+    const newIngredients = { ...this.state.ingredients };
+    newIngredients[type]++;
+    const newPrice = this.state.totalPrice + ingredient_prices[type];
+    this.setState({
+      ingredients: newIngredients,
+      totalPrice: newPrice,
+      purchasing: true,
+    });
+  };
+  ortsHasah = (type) => {
+    if (this.state.ingredients[type] > 0) {
+      const newIngredients = { ...this.state.ingredients };
+      newIngredients[type]--;
+      const newPrice = this.state.totalPrice - ingredient_prices[type];
+      this.setState({
+        ingredients: newIngredients,
+        totalPrice: newPrice,
+        purchasing: newPrice > 500,
+      });
     }
-    ortsNemeh = (type) => {
-        console.log(type);
-        const newIngredients = {...this.state.ingredient};
-        newIngredients[type]++;
-        this.setState();
+  };
+  render() {
+    const disabledIngredients = { ...this.state.ingredients };
+    for (let key in disabledIngredients) {
+      disabledIngredients[key] = disabledIngredients[key] <= 0;
     }
-    render(){
-        return(
-            <div>
-                <Burger ingredients = {this.state.ingredient}/>
-                <BuildControls ortsNemeh={this.ortsNemeh}/>
-            </div>
-        )
-    }
+    return (
+      <div>
+        <Modal show={this.state.confirmOrder} close={this.closeConfirmModal}>
+          <OrderSummary
+            onCancel={this.closeConfirmModal}
+            onContinue={this.continueOrder}
+            orts={this.state.ingredients}
+            name={ingredient_names}
+            price={this.state.totalPrice}
+          />
+        </Modal>
+        <p>Сүүлчийн захиалагч {this.state.lastcustomername}</p>
+        <Burger orts={this.state.ingredients} />
+        <BuildControls
+          show={this.showConfirmModal}
+          disabledButton={!this.state.purchasing}
+          price={this.state.totalPrice}
+          disabledIngredients={disabledIngredients}
+          ortsHasah={this.ortsHasah}
+          ortsNemeh={this.ortsNemeh}
+          ingreientnames={ingredient_names}
+        />
+      </div>
+    );
+  }
 }
 
 export default BurgerBuilder;
