@@ -4,6 +4,8 @@ import BuildControls from "../../components/BuildControls";
 import Modal from "../../components/general/modal";
 import OrderSummary from "../../components/OrderSummary";
 import axios from "../../utility/axios-order";
+
+import Spinner from "../../components/general/Spinner";
 const ingredient_prices = { salad: 150, bacon: 800, cheese: 250, meat: 1500 };
 const ingredient_names = {
   bacon: "Гахайн мах",
@@ -23,9 +25,11 @@ class BurgerBuilder extends Component {
     purchasing: false,
     confirmOrder: false,
     lastcustomername: "N/A",
+    loading: false,
   };
 
   componentDidMount = () => {
+    this.setState({ loading: true });
     axios.get("/orders.json").then((response) => {
       const arr = Object.entries(response.data);
       arr.forEach((el) => {
@@ -103,6 +107,7 @@ class BurgerBuilder extends Component {
             price={this.state.totalPrice}
           />
         </Modal>
+        {this.state.loading && <Spinner />}
         <p>Сүүлчийн захиалагч {this.state.lastcustomername}</p>
         <Burger orts={this.state.ingredients} />
         <BuildControls
